@@ -32,10 +32,22 @@ def load_voice(voice_name):
         prompt_text = f.read().strip()
     return ref_wav, prompt_text
 
+def detect_device():
+    import torch
+    if torch.cuda.is_available():
+        return "cuda"
+    elif hasattr(torch, "xpu") and torch.xpu.is_available():
+        return "xpu"
+    elif hasattr(torch, "mps") and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
 def main():
     print("載入 VoxCPM2 模型...")
     t0 = time.time()
-    model = VoxCPM.from_pretrained("openbmb/VoxCPM2", load_denoiser=False, device="xpu", optimize=False)
+    device = detect_device()
+    print(f"裝置: {device}")
+    model = VoxCPM.from_pretrained("openbmb/VoxCPM2", load_denoiser=False, device=device, optimize=False)
     print(f"模型載入完成，耗時 {time.time()-t0:.1f}s\n")
 
     # 預載兩個聲音的參考資料
